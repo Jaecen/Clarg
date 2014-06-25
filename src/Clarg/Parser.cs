@@ -29,9 +29,13 @@ namespace Clarg
 		{
 			// Recursively parse the arguments into KVP's
 			var descriptors = ParseArguments(
-					args.Select(s => (s ?? String.Empty).Trim())	// Help ensure good data going in
+					args.Select(s => (s ?? String.Empty).Trim())				// Help ensure good data going in
 				)
-				.ToDictionary(ad => ad.Key, ad => ad.Value);		// This will eventually need to change to a GroupBy to support enumerable values
+				.ToDictionary(													// This will eventually need to change to a GroupBy to support enumerable values
+					ad => ad.Key, 
+					ad => ad.Value,
+					StringComparer.OrdinalIgnoreCase							// Ignore case
+				);
 
 			// Find a constructor to invoke by matching descriptors to constructor parameters in the following order of preference:
 			//	1. Every parameter and descriptor is matched 1:1
@@ -39,25 +43,27 @@ namespace Clarg
 			//	3. Every non-optional parameter is matched to a descriptor, every unmatched parameter has a default value, and there is a params array for the unmatched descriptors
 			var targetConstructor = typeof(T)
 				.GetConstructors()
-				.Select(constructor => new							// Evaluate each constructor
+				.Select(constructor => new										// Evaluate each constructor
 				{
 					constructor,
 					arguments = constructor
 						.GetParameters()
-						.Select(parameter => new					// For each constructor parameter, see if we have a matching descriptor, if it's optional, and if it's a params array
+						.Select(parameter => new								// For each constructor parameter, see if we have a matching descriptor, if it's optional, and if it's a params array
 						{
 							hasMatch = descriptors
-								.Where(descriptor => parameter.Name == descriptor.Key)
+								.Where(descriptor => parameter.Name.Equals(descriptor.Key, StringComparison.OrdinalIgnoreCase))	// Find the parameter name regardless of case
+								.Select(descriptor => new KeyValuePair<string, string>(parameter.Name, descriptor.Value))		// Use the correctly-cased parameter name
 								.Any(),
 							isOptional = parameter.IsOptional,
 							isParamArray = parameter.ParameterType == typeof(KeyValuePair<string, string>[]) && parameter.GetCustomAttributes<ParamArrayAttribute>().Any(),
 						}),
-					descriptors = descriptors						// For each descriptor, see if it has a matching constructor parameter
+					descriptors = descriptors									// For each descriptor, see if it has a matching constructor parameter
 						.Select(descriptor => new
 						{
 							hasMatch = constructor
 								.GetParameters()
-								.Where(argument => argument.Name == descriptor.Key)
+								.Where(parameter => parameter.Name.Equals(descriptor.Key, StringComparison.OrdinalIgnoreCase))	// Find the parameter name regardless of case
+								.Select(parameter => new KeyValuePair<string, string>(parameter.Name, descriptor.Value))		// Use the correctly-cased parameter name
 								.Any(),
 						}),
 				})
@@ -66,19 +72,19 @@ namespace Clarg
 					o.constructor,
 					o.arguments,
 					o.descriptors,
-					isMatch = o												// A constructor that has a descriptor for every parameter and an parameter for every descriptor
+					isMatch = o													// A constructor that has a descriptor for every parameter and an parameter for every descriptor
 						.arguments
 						.All(argument => argument.hasMatch && !argument.isParamArray)
 						&& o
 						.descriptors
 						.All(descriptor => descriptor.hasMatch),
-					isMatchWithOptionals = o								// A constructor that has an parameter for every descriptor and the rest are optional
+					isMatchWithOptionals = o									// A constructor that has an parameter for every descriptor and the rest are optional
 						.descriptors
 						.All(descriptor => descriptor.hasMatch)
 						&& o
 						.arguments
 						.All(argument => (argument.hasMatch || argument.isOptional) && !argument.isParamArray),
-					isMatchWithParams = o									// A constructor that has a descriptor for every required parameter and a params array for the rest of the descriptors
+					isMatchWithParams = o										// A constructor that has a descriptor for every required parameter and a params array for the rest of the descriptors
 						.arguments
 						.Where(argument => !argument.isParamArray)
 						.All(argument => argument.hasMatch || argument.isOptional)
@@ -136,7 +142,7 @@ namespace Clarg
 			return descriptors
 				.Where(descriptor => !constructorParameters
 					.Select(parameter => parameter.Name)
-					.Contains(descriptor.Key)
+					.Contains(descriptor.Key, StringComparer.OrdinalIgnoreCase)		// Ignore case
 				)
 				.ToArray();
 		}
@@ -162,7 +168,7 @@ namespace Clarg
 
 			if(!args.Any() || (arg.StartsWith("--") || arg.StartsWith("/")))
 				return new[] { new KeyValuePair<string, string>(argumentName, Boolean.TrueString) }
-					.Concat(ParseArguments(args));		// Don't advance args, as there was no value
+					.Concat(ParseArguments(args));									// Don't advance args, as there was no value
 			else
 				return new[] { new KeyValuePair<string, string>(argumentName, arg) }
 					.Concat(ParseArguments(args.Skip(1)));

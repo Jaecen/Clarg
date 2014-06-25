@@ -7,6 +7,18 @@ namespace Tests
 	[TestClass]
 	public class ParserTests
 	{
+		class ExactArguments
+		{
+			public readonly string One;
+			public readonly int Two;
+
+			public ExactArguments(string one, int two)
+			{
+				One = one;
+				Two = two;
+			}
+		}
+
 		[TestMethod]
 		public void HandleExactArguments()
 		{
@@ -18,6 +30,46 @@ namespace Tests
 			Assert.AreEqual(2, arguments.Two);
 		}
 
+		class BooleanArguments
+		{
+			public readonly bool One;
+			public readonly bool Two;
+			public readonly bool Three;
+
+			public BooleanArguments(bool one, bool two, bool three)
+			{
+				One = one;
+				Two = two;
+				Three = three;
+			}
+		}
+
+		[TestMethod]
+		public void HandleMultipleBooleanArgumentsWithoutValues()
+		{
+			var parser = new Parser();
+
+			var arguments = parser.Create<BooleanArguments>(new[] { "--one", "/two", "--three" });
+
+			Assert.IsTrue(arguments.One);
+			Assert.IsTrue(arguments.Two);
+			Assert.IsTrue(arguments.Three);
+		}
+
+		class OptionalArguments
+		{
+			public readonly string One;
+			public readonly int Two;
+			public readonly bool? Three;
+
+			public OptionalArguments(string one, int two, bool? three = null)
+			{
+				One = one;
+				Two = two;
+				Three = three;
+			}
+		}
+		
 		[TestMethod]
 		public void HandleOptionalArgumentsWithNoValue()
 		{
@@ -54,6 +106,20 @@ namespace Tests
 			Assert.AreEqual(true, arguments.Three);
 		}
 
+		class ParamsArguments
+		{
+			public readonly string One;
+			public readonly int Two;
+			public readonly KeyValuePair<string, string>[] Others;
+
+			public ParamsArguments(string one, int two, params KeyValuePair<string, string>[] others)
+			{
+				One = one;
+				Two = two;
+				Others = others;
+			}
+		}
+		
 		[TestMethod]
 		public void HandleParamsArgumentsWithNoValue()
 		{
@@ -81,45 +147,70 @@ namespace Tests
 			Assert.AreEqual("four", arguments.Others[1].Key);
 			Assert.AreEqual("hopefully", arguments.Others[1].Value);
 		}
-	}
 
-	class ExactArguments
-	{
-		public readonly string One;
-		public readonly int Two;
-
-		public ExactArguments(string one, int two)
+		class CaseInsensitiveArguments
 		{
-			One = one;
-			Two = two;
+			public readonly string FirstArgument;
+			public readonly int? SecondArgument;
+			public readonly KeyValuePair<string, string>[] FurtherArguments;
+
+			public CaseInsensitiveArguments(string firstArgument = null, int? secondArgument = null)
+			{
+				FirstArgument = firstArgument;
+				SecondArgument = secondArgument;
+			}
+
+			public CaseInsensitiveArguments(string firstArgument, int secondArgument, params KeyValuePair<string, string>[] furtherArguments)
+				: this(firstArgument, (int?)secondArgument)
+			{
+				FurtherArguments = furtherArguments;
+			}
 		}
-	}
 
-	class OptionalArguments
-	{
-		public readonly string One;
-		public readonly int Two;
-		public readonly bool? Three;
-
-		public OptionalArguments(string one, int two, bool? three = null)
+		[TestMethod]
+		public void HandlesCaseDifferences()
 		{
-			One = one;
-			Two = two;
-			Three = three;
+			var parser = new Parser();
+
+			var arguments = parser.Create<CaseInsensitiveArguments>(new[] { 
+					"--FIRSTargument", "first", 
+					"/secondargument", "2", 
+				});
+
+			Assert.AreEqual("first", arguments.FirstArgument);
+			Assert.AreEqual(2, arguments.SecondArgument);
+			Assert.IsNull(arguments.FurtherArguments);
 		}
-	}
 
-	class ParamsArguments
-	{
-		public readonly string One;
-		public readonly int Two;
-		public readonly KeyValuePair<string, string>[] Others;
-
-		public ParamsArguments(string one, int two, params KeyValuePair<string, string>[] others)
+		[TestMethod]
+		public void HandlesCaseDifferencesWithOptionalArgs()
 		{
-			One = one;
-			Two = two;
-			Others = others;
+			var parser = new Parser();
+
+			var arguments = parser.Create<CaseInsensitiveArguments>(new[] { 
+					"/secondargument", "2", 
+				});
+
+			Assert.AreEqual(null, arguments.FirstArgument);
+			Assert.AreEqual(2, arguments.SecondArgument);
+			Assert.IsNull(arguments.FurtherArguments);
+		}
+
+		[TestMethod]
+		public void HandlesCaseDifferencesWithParamsArg()
+		{
+			var parser = new Parser();
+
+			var arguments = parser.Create<CaseInsensitiveArguments>(new[] { 
+					"--FIRSTargument", "first", 
+					"/secondargument", "2", 
+					"/some", "other",
+					"--argu", "ments",
+				});
+
+			Assert.AreEqual("first", arguments.FirstArgument);
+			Assert.AreEqual(2, arguments.SecondArgument);
+			Assert.AreEqual(2, arguments.FurtherArguments.Length);
 		}
 	}
 }
