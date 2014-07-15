@@ -50,7 +50,12 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
-    <Compile Include="ParserTests.cs" />
+    <Compile Include="ParseBooleanArguments.cs" />
+    <Compile Include="ParseCaseInsensitiveArguments.cs" />
+    <Compile Include="ParseEnumerableArguments.cs" />
+    <Compile Include="ParseExactArguments.cs" />
+    <Compile Include="ParseOptionalArguments.cs" />
+    <Compile Include="ParseParamsArguments.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
