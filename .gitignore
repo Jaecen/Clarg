@@ -1,5 +1,8 @@
 bin/
 obj/
-lib/packages/
-*.suo
-*.user
+src/artifacts/
+test/artifacts/
+
+\.vs/
+*\.xproj\.user
+project\.lock\.json

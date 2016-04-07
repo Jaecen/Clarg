@@ -4,6 +4,6 @@
 [assembly: AssemblyDescription("Command Line Arguments Parser")]
 [assembly: AssemblyCompany("Vortx, Inc.")]
 [assembly: AssemblyProduct("Clarg")]
-[assembly: AssemblyCopyright("Copyright © Vortx, Inc. 2014")]
+[assembly: AssemblyCopyright("Copyright © Vortx, Inc. 2016")]
 
-[assembly: AssemblyVersion("2.0.0.*")]
+[assembly: AssemblyVersion("2.0.1.*")]

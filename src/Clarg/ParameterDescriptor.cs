@@ -26,10 +26,10 @@ namespace Clarg
 
 		public override bool Equals(object obj)
 		{
-			if(Object.ReferenceEquals(obj, null))
+			if(ReferenceEquals(obj, null))
 				return false;
 
-			if(Object.ReferenceEquals(obj, this))
+			if(ReferenceEquals(obj, this))
 				return true;
 
 			if(obj is ParameterDescriptor)
@@ -40,10 +40,10 @@ namespace Clarg
 
 		public bool Equals(ParameterDescriptor obj)
 		{
-			if(Object.ReferenceEquals(obj, null))
+			if(ReferenceEquals(obj, null))
 				return false;
 
-			if(Object.ReferenceEquals(obj, this))
+			if(ReferenceEquals(obj, this))
 				return true;
 
 			return StringComparer.OrdinalIgnoreCase.Equals(obj.Name, Name);
@@ -56,10 +56,10 @@ namespace Clarg
 
 		public static bool operator ==(ParameterDescriptor x, ParameterDescriptor y)
 		{
-			if(Object.ReferenceEquals(x, null) || Object.ReferenceEquals(y, null))
-				return Object.ReferenceEquals(x, null) && Object.ReferenceEquals(y, null);
+			if(ReferenceEquals(x, null) || ReferenceEquals(y, null))
+				return ReferenceEquals(x, null) && ReferenceEquals(y, null);
 
-			if(Object.ReferenceEquals(x, y))
+			if(ReferenceEquals(x, y))
 				return true;
 
 			return x.Equals(y);
