@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Clarg
 {
@@ -13,7 +11,7 @@ namespace Clarg
 		{
 			// Recursively parse the arguments into KVP's
 			return ParseArguments(
-					args.Select(s => (s ?? String.Empty).Trim())				// Help ensure good data going in
+					args.Select(s => (s ?? String.Empty).Trim())                // Help ensure good data going in
 				);
 		}
 
@@ -38,7 +36,7 @@ namespace Clarg
 
 			if(!args.Any() || (arg.StartsWith("--") || arg.StartsWith("/")))
 				return new[] { new ArgumentDescriptor(argumentName, Boolean.TrueString) }
-					.Concat(ParseArguments(args));									// Don't advance args, as there was no value
+					.Concat(ParseArguments(args));                                  // Don't advance args, as there was no value
 			else
 				return new[] { new ArgumentDescriptor(argumentName, arg) }
 					.Concat(ParseArguments(args.Skip(1)));
