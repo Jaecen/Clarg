@@ -37,6 +37,7 @@ namespace Clarg
 
 			// Extract some basic information about each constructor on the target type and its parameters
 			var constructorCandidates = typeof(T)
+				.GetTypeInfo()
 				.GetConstructors()
 				.Select(constructor => new
 				{
@@ -46,7 +47,10 @@ namespace Clarg
 							.Select(parameter => new ParameterDescriptor(
 									name: parameter.Name,
 									type: parameter.ParameterType,
-									isEnumerable: parameter.ParameterType.IsAssignableFrom(typeof(IEnumerable<>)),
+									isEnumerable: parameter
+										.ParameterType
+										.GetTypeInfo()
+										.IsAssignableFrom(typeof(IEnumerable<>)),
 									isOptional: parameter.IsOptional,
 									isParamsArray: parameter.ParameterType == typeof(KeyValuePair<string, string>[]) && parameter.GetCustomAttributes<ParamArrayAttribute>().Any(),
 									parameterInfo: parameter
@@ -208,6 +212,7 @@ namespace Clarg
 
 			if(parameterIsEnumerable)
 				parameterType = parameterType
+					.GetTypeInfo()
 					.GetGenericArguments()
 					.First();
 
@@ -223,7 +228,8 @@ namespace Clarg
 			{
 				// Cast the converted types to parameterType
 				// Get the generic cast extension method
-				var castExtensionMethod = typeof(System.Linq.Enumerable)
+				var castExtensionMethod = typeof(Enumerable)
+					.GetTypeInfo()
 					.GetMethod("Cast", BindingFlags.Static | BindingFlags.Public)
 					.MakeGenericMethod(parameterType);
 
