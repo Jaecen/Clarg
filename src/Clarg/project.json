@@ -1,5 +1,5 @@
 {
-	"version": "2.0.3-*",
+	"version": "3.0.0-*",
 
 	"description": "Command Line Arguments Parser",
 	"authors": [ "jason@vortx.com", "josh@vortx.com" ],

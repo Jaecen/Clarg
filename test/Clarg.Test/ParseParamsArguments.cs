@@ -25,14 +25,15 @@ namespace Tests
 		{
 			var parser = new Parser();
 
-			var arguments = parser.Create<ParamsArguments>(new[] {
+			var result = parser.Create<ParamsArguments>(new[] {
 				"--one", "first",
 				"/two", "2",
 			});
 
-			Assert.Equal("first", arguments.One);
-			Assert.Equal(2, arguments.Two);
-			Assert.Equal(0, arguments.Others.Length);
+			Assert.IsType<ParserSuccess<ParamsArguments>>(result);
+			Assert.Equal("first", result.Value.One);
+			Assert.Equal(2, result.Value.Two);
+			Assert.Equal(0, result.Value.Others.Length);
 		}
 
 		[Fact]
@@ -40,20 +41,21 @@ namespace Tests
 		{
 			var parser = new Parser();
 
-			var arguments = parser.Create<ParamsArguments>(new[] {
+			var result = parser.Create<ParamsArguments>(new[] {
 				"--one", "first",
 				"/two", "2",
 				"--three", "working",
 				"/four", "hopefully",
 			});
 
-			Assert.Equal("first", arguments.One);
-			Assert.Equal(2, arguments.Two);
-			Assert.Equal(2, arguments.Others.Length);
-			Assert.Equal("three", arguments.Others[0].Key);
-			Assert.Equal("working", arguments.Others[0].Value);
-			Assert.Equal("four", arguments.Others[1].Key);
-			Assert.Equal("hopefully", arguments.Others[1].Value);
+			Assert.IsType<ParserSuccess<ParamsArguments>>(result);
+			Assert.Equal("first", result.Value.One);
+			Assert.Equal(2, result.Value.Two);
+			Assert.Equal(2, result.Value.Others.Length);
+			Assert.Equal("three", result.Value.Others[0].Key);
+			Assert.Equal("working", result.Value.Others[0].Value);
+			Assert.Equal("four", result.Value.Others[1].Key);
+			Assert.Equal("hopefully", result.Value.Others[1].Value);
 		}
 	}
 }

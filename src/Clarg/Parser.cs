@@ -8,7 +8,7 @@ using System.Reflection;
 namespace Clarg
 {
 	// A _C_ommand _L_ine _ARG_uments parser
-	//	- Doesn't require a decorated type or mutable properties to specify arguments. 
+	//	- Doesn't require a decorated type or mutable properties to specify arguments.
 	//	- Arguments are determined from the constructor of the target type.
 	//	- Accepts -- or / for param names.
 	//	- Assumes boolean if just a name is given.
@@ -25,12 +25,14 @@ namespace Clarg
 	public class Parser
 	{
 		readonly Tokenizer Tokenizer;
+
 		public Parser()
 		{
 			Tokenizer = new Tokenizer();
 		}
 
-		public T Create<T>(string[] args)
+		public ParserResult<T> Create<T>(string[] args)
+			where T: class
 		{
 			// Turn args into a set of kvp's
 			var arguments = Tokenizer.Tokenize(args);
@@ -43,28 +45,27 @@ namespace Clarg
 				{
 					constructor,
 					parameters = constructor
-							.GetParameters()
-							.Select(parameter => new ParameterDescriptor(
-									name: parameter.Name,
-									type: parameter.ParameterType,
-									isEnumerable: parameter
-										.ParameterType
-										.GetTypeInfo()
-										.IsAssignableFrom(typeof(IEnumerable<>)),
-									isOptional: parameter.IsOptional,
-									isParamsArray: parameter.ParameterType == typeof(KeyValuePair<string, string>[]) && parameter.GetCustomAttributes<ParamArrayAttribute>().Any(),
-									parameterInfo: parameter
-								))
-							.ToArray(),
+						.GetParameters()
+						.Select(parameter => new ParameterDescriptor(
+							name: parameter.Name,
+							type: parameter.ParameterType,
+							isEnumerable: parameter
+								.ParameterType
+								.GetTypeInfo()
+								.IsAssignableFrom(typeof(IEnumerable<>)),
+							isOptional: parameter.IsOptional,
+							isParamsArray: parameter.ParameterType == typeof(KeyValuePair<string, string>[]) && parameter.GetCustomAttributes<ParamArrayAttribute>().Any(),
+							parameterInfo: parameter))
+						.ToArray(),
 				})
 				.Select(candidate => new
 				{
 					candidate.constructor,
 					candidate.parameters,
 					paramsArray = candidate
-							.parameters
-							.Where(parameter => parameter.IsParamsArray)
-							.FirstOrDefault(),
+						.parameters
+						.Where(parameter => parameter.IsParamsArray)
+						.FirstOrDefault(),
 				})
 				.ToArray();
 
@@ -75,22 +76,22 @@ namespace Clarg
 					candidate.constructor,
 					candidate.paramsArray,
 					mappings = candidate
-							.parameters
-							.Where(parameter => !parameter.IsParamsArray)                   // Don't map params array on name
-							.Select(parameter => new ArgumentParameterMapping(
-								argument: arguments
-									.Where(argument => parameter.Name.Equals(argument.Name, StringComparison.OrdinalIgnoreCase))
-									.FirstOrDefault(),
-								parameter: parameter))
-							.Union(arguments
-								.Select(argument => new ArgumentParameterMapping(
-									argument: argument,
-									parameter: candidate
-										.parameters
-										.Where(parameter => parameter.Name.Equals(argument.Name, StringComparison.OrdinalIgnoreCase))
-										.DefaultIfEmpty(candidate.paramsArray)              // Default to params array, if it exists
-										.FirstOrDefault())))
-							.ToArray()
+						.parameters
+						.Where(parameter => !parameter.IsParamsArray)                   // Don't map params array on name
+						.Select(parameter => new ArgumentParameterMapping(
+							argument: arguments
+								.Where(argument => parameter.Name.Equals(argument.Name, StringComparison.OrdinalIgnoreCase))
+								.FirstOrDefault(),
+							parameter: parameter))
+						.Union(arguments
+							.Select(argument => new ArgumentParameterMapping(
+								argument: argument,
+								parameter: candidate
+									.parameters
+									.Where(parameter => parameter.Name.Equals(argument.Name, StringComparison.OrdinalIgnoreCase))
+									.DefaultIfEmpty(candidate.paramsArray)              // Default to params array, if it exists
+									.FirstOrDefault())))
+						.ToArray()
 				})
 				.ToArray();
 
@@ -103,28 +104,25 @@ namespace Clarg
 					candidate.paramsArray,
 
 					isExactMatch = candidate                                    // A constructor that has an argument for every parameter and an parameter for every argument
-							.mappings
-							.All(mapping =>
-								mapping.Parameter != null
-								&& mapping.Argument != null
-								&& !mapping.Parameter.IsParamsArray),
+						.mappings
+						.All(mapping =>
+							mapping.Parameter != null
+							&& mapping.Argument != null
+							&& !mapping.Parameter.IsParamsArray),
 
 					isMatchWithOptionals = candidate                            // A constructor that has a parameter for every argument and the remaining parameters are optional
-							.mappings
-							.All(mapping =>
-								mapping.Parameter != null
-								&& (mapping.Argument != null || mapping.Parameter.IsOptional)),
+						.mappings
+						.All(mapping =>
+							mapping.Parameter != null
+							&& (mapping.Argument != null || mapping.Parameter.IsOptional)),
 
 					isMatchWithParams = candidate                               // A constructor that has an argument for every required parameter and a params array for the rest of the arguments
-							.mappings
-							.All(mapping =>
-								candidate.paramsArray != null
-								&& (mapping.Parameter == null                       // Ensure that all non-params-array parameters are mapped
-									|| (!mapping.Parameter.IsParamsArray
-										&& (mapping.Argument != null || mapping.Parameter.IsOptional)
-										)
-									)
-							)
+						.mappings
+						.All(mapping =>
+							candidate.paramsArray != null
+							&& (mapping.Parameter == null                   // Ensure that all non-params-array parameters are mapped
+								|| (!mapping.Parameter.IsParamsArray
+									&& (mapping.Argument != null || mapping.Parameter.IsOptional))))
 				});
 
 			// Rank the candidates in order of preference:
@@ -166,13 +164,13 @@ namespace Clarg
 					candidate.matchRanking,
 					candidate.parameterRanking,
 					typedParameters = candidate
-							.mappings
-							.Concat(                                                // Ensure the params array argument is included even if there are no additional arguments
-								candidate.paramsArray != null && !candidate.mappings.Any(mapping => mapping.Parameter == candidate.paramsArray)
-									? new[] { new ArgumentParameterMapping(null, candidate.paramsArray) }
-									: new ArgumentParameterMapping[] { })
-							.GroupBy(mapping => mapping.Parameter, mapping => mapping.Argument)
-							.Select(groupedMapping => GetArgumentForParameter(groupedMapping))
+						.mappings
+						.Concat(                                                // Ensure the params array argument is included even if there are no additional arguments
+							candidate.paramsArray != null && !candidate.mappings.Any(mapping => mapping.Parameter == candidate.paramsArray)
+								? new[] { new ArgumentParameterMapping(null, candidate.paramsArray) }
+								: new ArgumentParameterMapping[] { })
+						.GroupBy(mapping => mapping.Parameter, mapping => mapping.Argument)
+						.Select(groupedMapping => GetArgumentForParameter(groupedMapping))
 				});
 
 			if(!preparedCandidates.Any())
@@ -185,7 +183,7 @@ namespace Clarg
 			var selectedCandidate = preparedCandidates.First();
 			var instance = (T)selectedCandidate.constructor.Invoke(selectedCandidate.typedParameters.ToArray());
 
-			return instance;
+			return new ParserSuccess<T>(instance);
 		}
 
 		object GetArgumentForParameter(IGrouping<ParameterDescriptor, ArgumentDescriptor> parameterMapping)

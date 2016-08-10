@@ -30,14 +30,15 @@ namespace Tests
 		{
 			var parser = new Parser();
 
-			var arguments = parser.Create<CaseInsensitiveArguments>(new[] {
+			var result = parser.Create<CaseInsensitiveArguments>(new[] {
 					"--FIRSTargument", "first",
 					"/secondargument", "2",
 				});
 
-			Assert.Equal("first", arguments.FirstArgument);
-			Assert.Equal(2, arguments.SecondArgument);
-			Assert.Null(arguments.FurtherArguments);
+			Assert.IsType<ParserSuccess<CaseInsensitiveArguments>>(result);
+			Assert.Equal("first", result.Value.FirstArgument);
+			Assert.Equal(2, result.Value.SecondArgument);
+			Assert.Null(result.Value.FurtherArguments);
 		}
 
 		[Fact]
@@ -45,13 +46,14 @@ namespace Tests
 		{
 			var parser = new Parser();
 
-			var arguments = parser.Create<CaseInsensitiveArguments>(new[] {
+			var result = parser.Create<CaseInsensitiveArguments>(new[] {
 					"/secondargument", "2",
 				});
 
-			Assert.Equal(null, arguments.FirstArgument);
-			Assert.Equal(2, arguments.SecondArgument);
-			Assert.Null(arguments.FurtherArguments);
+			Assert.IsType<ParserSuccess<CaseInsensitiveArguments>>(result);
+			Assert.Equal(null, result.Value.FirstArgument);
+			Assert.Equal(2, result.Value.SecondArgument);
+			Assert.Null(result.Value.FurtherArguments);
 		}
 
 		[Fact]
@@ -59,16 +61,17 @@ namespace Tests
 		{
 			var parser = new Parser();
 
-			var arguments = parser.Create<CaseInsensitiveArguments>(new[] {
+			var result = parser.Create<CaseInsensitiveArguments>(new[] {
 					"--FIRSTargument", "first",
 					"/secondargument", "2",
 					"/some", "other",
 					"--argu", "ments",
 				});
 
-			Assert.Equal("first", arguments.FirstArgument);
-			Assert.Equal(2, arguments.SecondArgument);
-			Assert.Equal(2, arguments.FurtherArguments.Length);
+			Assert.IsType<ParserSuccess<CaseInsensitiveArguments>>(result);
+			Assert.Equal("first", result.Value.FirstArgument);
+			Assert.Equal(2, result.Value.SecondArgument);
+			Assert.Equal(2, result.Value.FurtherArguments.Length);
 		}
 	}
 }

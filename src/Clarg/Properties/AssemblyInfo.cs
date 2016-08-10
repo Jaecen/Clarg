@@ -6,4 +6,4 @@
 [assembly: AssemblyProduct("Clarg")]
 [assembly: AssemblyCopyright("Copyright © Vortx, Inc. 2016")]
 
-[assembly: AssemblyVersion("2.0.2.*")]
+[assembly: AssemblyVersion("3.0.0.*")]

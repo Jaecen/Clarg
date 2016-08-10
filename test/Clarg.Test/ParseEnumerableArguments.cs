@@ -22,13 +22,14 @@ namespace Tests
 		{
 			var parser = new Parser();
 
-			var arguments = parser.Create<EnumerableArguments>(new[] {
+			var result = parser.Create<EnumerableArguments>(new[] {
 					"/numbers", "1",
 				});
 
-			Assert.NotNull(arguments.Numbers);
-			Assert.Equal(1, arguments.Numbers.Count());
-			Assert.Equal(1, arguments.Numbers.First());
+			Assert.IsType<ParserSuccess<EnumerableArguments>>(result);
+			Assert.NotNull(result.Value.Numbers);
+			Assert.Equal(1, result.Value.Numbers.Count());
+			Assert.Equal(1, result.Value.Numbers.First());
 		}
 
 		[Fact]
@@ -36,17 +37,18 @@ namespace Tests
 		{
 			var parser = new Parser();
 
-			var arguments = parser.Create<EnumerableArguments>(new[] {
+			var result = parser.Create<EnumerableArguments>(new[] {
 					"/numbers", "1",
 					"--numbers", "2",
 					"/Numbers", "3",
 				});
 
-			Assert.NotNull(arguments.Numbers);
-			Assert.Equal(3, arguments.Numbers.Count());
-			Assert.Equal(1, arguments.Numbers.First());
-			Assert.Equal(2, arguments.Numbers.Skip(1).First());
-			Assert.Equal(3, arguments.Numbers.Skip(2).First());
+			Assert.IsType<ParserSuccess<EnumerableArguments>>(result);
+			Assert.NotNull(result.Value.Numbers);
+			Assert.Equal(3, result.Value.Numbers.Count());
+			Assert.Equal(1, result.Value.Numbers.First());
+			Assert.Equal(2, result.Value.Numbers.Skip(1).First());
+			Assert.Equal(3, result.Value.Numbers.Skip(2).First());
 		}
 
 		class OptionalEnumerableArguments
@@ -66,12 +68,13 @@ namespace Tests
 		{
 			var parser = new Parser();
 
-			var arguments = parser.Create<OptionalEnumerableArguments>(new[] {
+			var result = parser.Create<OptionalEnumerableArguments>(new[] {
 					"/first", "3.14",
 				});
 
-			Assert.Equal(3.14, arguments.First);
-			Assert.Null(arguments.Numbers);
+			Assert.IsType<ParserSuccess<OptionalEnumerableArguments>>(result);
+			Assert.Equal(3.14, result.Value.First);
+			Assert.Null(result.Value.Numbers);
 		}
 
 		[Fact]
@@ -79,15 +82,16 @@ namespace Tests
 		{
 			var parser = new Parser();
 
-			var arguments = parser.Create<OptionalEnumerableArguments>(new[] {
+			var result = parser.Create<OptionalEnumerableArguments>(new[] {
 					"/first", "3.14",
 					"/numbers", "1",
 				});
 
-			Assert.Equal(3.14, arguments.First);
-			Assert.NotNull(arguments.Numbers);
-			Assert.Equal(1, arguments.Numbers.Count());
-			Assert.Equal(1, arguments.Numbers.First());
+			Assert.IsType<ParserSuccess<OptionalEnumerableArguments>>(result);
+			Assert.Equal(3.14, result.Value.First);
+			Assert.NotNull(result.Value.Numbers);
+			Assert.Equal(1, result.Value.Numbers.Count());
+			Assert.Equal(1, result.Value.Numbers.First());
 		}
 
 		[Fact]
@@ -95,19 +99,20 @@ namespace Tests
 		{
 			var parser = new Parser();
 
-			var arguments = parser.Create<OptionalEnumerableArguments>(new[] {
+			var result = parser.Create<OptionalEnumerableArguments>(new[] {
 					"/first", "3.14",
 					"/numbers", "1",
 					"--numbers", "2",
 					"/Numbers", "3",
 				});
 
-			Assert.Equal(3.14, arguments.First);
-			Assert.NotNull(arguments.Numbers);
-			Assert.Equal(3, arguments.Numbers.Count());
-			Assert.Equal(1, arguments.Numbers.First());
-			Assert.Equal(2, arguments.Numbers.Skip(1).First());
-			Assert.Equal(3, arguments.Numbers.Skip(2).First());
+			Assert.IsType<ParserSuccess<OptionalEnumerableArguments>>(result);
+			Assert.Equal(3.14, result.Value.First);
+			Assert.NotNull(result.Value.Numbers);
+			Assert.Equal(3, result.Value.Numbers.Count());
+			Assert.Equal(1, result.Value.Numbers.First());
+			Assert.Equal(2, result.Value.Numbers.Skip(1).First());
+			Assert.Equal(3, result.Value.Numbers.Skip(2).First());
 		}
 	}
 }

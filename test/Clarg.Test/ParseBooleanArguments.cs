@@ -24,11 +24,12 @@ namespace Tests
 		{
 			var parser = new Parser();
 
-			var arguments = parser.Create<BooleanArguments>(new[] { "--one", "/two", "--three" });
+			var result = parser.Create<BooleanArguments>(new[] { "--one", "/two", "--three" });
 
-			Assert.True(arguments.One);
-			Assert.True(arguments.Two);
-			Assert.True(arguments.Three);
+			Assert.IsType<ParserSuccess<BooleanArguments>>(result);
+			Assert.True(result.Value.One);
+			Assert.True(result.Value.Two);
+			Assert.True(result.Value.Three);
 		}
 	}
 }
