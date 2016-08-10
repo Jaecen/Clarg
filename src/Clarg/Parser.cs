@@ -35,7 +35,7 @@ namespace Clarg
 			where T: class
 		{
 			// Turn args into a set of kvp's
-			var arguments = Tokenizer.Tokenize(args);
+			var arguments = Tokenizer.Tokenize(args ?? new string[0]);
 
 			// Extract some basic information about each constructor on the target type and its parameters
 			var constructorCandidates = typeof(T)
@@ -156,6 +156,10 @@ namespace Clarg
 			var viableCandidates = rankedCandidates
 				.Where(candidate => candidate.matchRanking != null);
 
+			// If no arguments were provided, return an error result
+			if(!viableCandidates.Any())
+				return new ParserError<T>(Enumerable.Empty<ParserSuggestion>());
+
 			// Prepare the arguments by converting them to the corresponding parameter type
 			var preparedCandidates = viableCandidates
 				.Select(candidate => new
@@ -172,12 +176,6 @@ namespace Clarg
 						.GroupBy(mapping => mapping.Parameter, mapping => mapping.Argument)
 						.Select(groupedMapping => GetArgumentForParameter(groupedMapping))
 				});
-
-			if(!preparedCandidates.Any())
-			{
-				// Maybe do something better here like write out what args are missing from best possible candidate
-				throw new Exception("No constructor found that matches provided arguments");
-			}
 
 			// Create an instance of the type
 			var selectedCandidate = preparedCandidates.First();
