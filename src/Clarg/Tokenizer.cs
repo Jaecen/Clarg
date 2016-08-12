@@ -7,13 +7,10 @@ namespace Clarg
 	// Assembles a stream of command-line arguments into key/value pairs
 	class Tokenizer
 	{
+		// Recursively parse the arguments into KVP's
 		public IEnumerable<ArgumentDescriptor> Tokenize(string[] args)
-		{
-			// Recursively parse the arguments into KVP's
-			return ParseArguments(
-					args.Select(s => (s ?? String.Empty).Trim())                // Help ensure good data going in
-				);
-		}
+			=> ParseArguments(
+				args.Select(s => (s ?? string.Empty).Trim()));                 // Help ensure good data going in
 
 		IEnumerable<ArgumentDescriptor> ParseArguments(IEnumerable<string> args)
 		{
@@ -37,8 +34,8 @@ namespace Clarg
 			var arg = args.FirstOrDefault();
 
 			if(!args.Any() || (arg.StartsWith("--") || arg.StartsWith("-") || arg.StartsWith("/")))
-				return new[] { new ArgumentDescriptor(argumentName, Boolean.TrueString) }
-					.Concat(ParseArguments(args));                                  // Don't advance args, as there was no value
+				return new[] { new ArgumentDescriptor(argumentName, bool.TrueString) }
+					.Concat(ParseArguments(args));                             // Don't advance args, as there was no value
 			else
 				return new[] { new ArgumentDescriptor(argumentName, arg) }
 					.Concat(ParseArguments(args.Skip(1)));

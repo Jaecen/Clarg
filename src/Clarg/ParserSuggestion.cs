@@ -5,12 +5,12 @@ namespace Clarg
 	public class ParserSuggestion
 	{
 		public readonly string Description;
-		public readonly IEnumerable<ParserSuggestionParameter> Parameters;
+		public readonly IEnumerable<ParserSuggestionArgument> Arguments;
 
-		public ParserSuggestion(string description, IEnumerable<ParserSuggestionParameter> parameters)
+		public ParserSuggestion(string description, IEnumerable<ParserSuggestionArgument> arguments)
 		{
 			Description = description;
-			Parameters = parameters;
+			Arguments = arguments;
 		}
 	}
 }

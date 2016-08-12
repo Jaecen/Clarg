@@ -17,9 +17,10 @@ namespace Clarg
 	//	- Supports multiple argument values via IEnumerable
 	//	- T is any undecorated type.
 	//	- T can be immutable.
+	//	- Generates help text
+	//	- Help text can be customized by decorating constructors and paramters with ArgumentDescriptionAttribute.
 
 	// Eventially will support
-	//	- Generating help text
 	//	- Enums
 
 	public class Parser
@@ -32,7 +33,7 @@ namespace Clarg
 		}
 
 		public ParserResult<T> Create<T>(string[] args)
-			where T: class
+			where T : class
 		{
 			// Turn args into a set of kvp's
 			var arguments = Tokenizer.Tokenize(args ?? new string[0]);
@@ -49,10 +50,9 @@ namespace Clarg
 						.Select(parameter => new ParameterDescriptor(
 							name: parameter.Name,
 							type: parameter.ParameterType,
-							isEnumerable: parameter
-								.ParameterType
-								.GetTypeInfo()
-								.IsAssignableFrom(typeof(IEnumerable<>)),
+							isEnumerable:
+								parameter.ParameterType.GetTypeInfo().IsGenericType
+								&& parameter.ParameterType.GetTypeInfo().GetGenericTypeDefinition() == typeof(IEnumerable<>),
 							isOptional: parameter.IsOptional,
 							isParamsArray: parameter.ParameterType == typeof(KeyValuePair<string, string>[]) && parameter.GetCustomAttributes<ParamArrayAttribute>().Any(),
 							parameterInfo: parameter))
@@ -74,6 +74,7 @@ namespace Clarg
 				.Select(candidate => new
 				{
 					candidate.constructor,
+					candidate.parameters,
 					candidate.paramsArray,
 					mappings = candidate
 						.parameters
@@ -100,6 +101,7 @@ namespace Clarg
 				.Select(candidate => new
 				{
 					candidate.constructor,
+					candidate.parameters,
 					candidate.mappings,
 					candidate.paramsArray,
 
@@ -134,6 +136,7 @@ namespace Clarg
 				.Select(candidate => new
 				{
 					candidate.constructor,
+					candidate.parameters,
 					candidate.mappings,
 					candidate.paramsArray,
 					candidate.isExactMatch,
@@ -144,21 +147,52 @@ namespace Clarg
 						: candidate.isMatchWithOptionals ? 1
 						: candidate.isMatchWithParams ? 2
 						: (int?)null,
-					parameterRanking = candidate
+					matchedParameterCount = candidate
 						.mappings
-						.Where(mapping => mapping.Parameter != null)
+						.Where(mapping => mapping.Parameter != null && mapping.Argument != null)
+						.Count(),
+					unmatchedParameterCount = candidate
+						.mappings
+						.Where(mapping => mapping.Parameter == null)
+						.Count(),
+					unmatchedArgumentCount = candidate
+						.mappings
+						.Where(mapping => mapping.Argument == null)
 						.Count()
 				})
-				.OrderBy(candidate => candidate.matchRanking)                       // Order by preference (lower is more preferred)
-				.ThenByDescending(candidate => candidate.parameterRanking);         // Then order by highest number of matched parameters
+				.OrderBy(candidate => candidate.matchRanking)                   // Order by preference (lower is more preferred)
+				.ThenByDescending(candidate => candidate.matchedParameterCount) // Then order by highest number of matched parameters
+				.ToArray();
 
 			// Filter out constructors that we don't have the arguments for
 			var viableCandidates = rankedCandidates
 				.Where(candidate => candidate.matchRanking != null);
 
-			// If no arguments were provided, return an error result
 			if(!viableCandidates.Any())
-				return new ParserError<T>(Enumerable.Empty<ParserSuggestion>());
+			{
+				// If no arguments were provided, give a full list of options.
+				// If some arguments were provided, take all matches with the lowest number of unmatched parameters and present them as suggestions.
+				var lowestUnmatchedCount = rankedCandidates.Min(candidate => candidate.unmatchedParameterCount + candidate.unmatchedArgumentCount);
+				return new ParserError<T>(rankedCandidates
+					.Where(candidate => !args.Any() || (candidate.unmatchedParameterCount + candidate.unmatchedArgumentCount) == lowestUnmatchedCount)
+					.Select(candidate => new ParserSuggestion(
+						description: candidate
+							.constructor
+							.GetCustomAttribute<ArgumentDescriptionAttribute>()
+							?.Description,
+						arguments: candidate
+							.parameters
+							.Select(parameter => new ParserSuggestionArgument(
+								name: parameter.Name,
+								description: parameter
+									.ParameterInfo
+									.GetCustomAttribute<ArgumentDescriptionAttribute>()
+									?.Description,
+								type: parameter.Type,
+								isEnumerable: parameter.IsEnumerable,
+								isOptional: parameter.IsOptional,
+								isParams: parameter.IsParamsArray)))));
+			}
 
 			// Prepare the arguments by converting them to the corresponding parameter type
 			var preparedCandidates = viableCandidates
@@ -166,7 +200,7 @@ namespace Clarg
 				{
 					candidate.constructor,
 					candidate.matchRanking,
-					candidate.parameterRanking,
+					candidate.matchedParameterCount,
 					typedParameters = candidate
 						.mappings
 						.Concat(                                                // Ensure the params array argument is included even if there are no additional arguments
@@ -202,11 +236,7 @@ namespace Clarg
 				.ParameterInfo
 				.ParameterType;
 
-			var parameterTypeInfo = parameterType.GetTypeInfo();
-
-			var parameterIsEnumerable = parameterTypeInfo.IsGenericType && parameterType.GetGenericTypeDefinition() == typeof(IEnumerable<>);
-
-			if(parameterIsEnumerable)
+			if(parameterMapping.Key.IsEnumerable)
 				parameterType = parameterType
 					.GetTypeInfo()
 					.GetGenericArguments()
@@ -220,7 +250,7 @@ namespace Clarg
 				.Select(argument => converter.ConvertFromString(argument.Value))
 				.ToArray();
 
-			if(parameterIsEnumerable)
+			if(parameterMapping.Key.IsEnumerable)
 			{
 				// Cast the converted types to parameterType
 				// Get the generic cast extension method

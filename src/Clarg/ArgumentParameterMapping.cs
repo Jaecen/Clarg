@@ -1,9 +1,8 @@
-﻿using System;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 
 namespace Clarg
 {
-	[DebuggerDisplay("{Argument} -> {Parameter}")]
+	[DebuggerDisplay("arg: {Argument?.Name} -> param: {Parameter?.Name}")]
 	class ArgumentParameterMapping
 	{
 		public readonly ArgumentDescriptor Argument;
@@ -41,11 +40,8 @@ namespace Clarg
 		}
 
 		public override int GetHashCode()
-		{
-			return
-				(Argument == null ? Int32.MinValue : Argument.GetHashCode())
-				^ (Parameter == null ? Int32.MinValue : Parameter.GetHashCode());
-		}
+			=> (Argument == null ? int.MinValue : Argument.GetHashCode())
+				^ (Parameter == null ? int.MinValue : Parameter.GetHashCode());
 
 		public static bool operator ==(ArgumentParameterMapping x, ArgumentParameterMapping y)
 		{
@@ -59,8 +55,6 @@ namespace Clarg
 		}
 
 		public static bool operator !=(ArgumentParameterMapping x, ArgumentParameterMapping y)
-		{
-			return !(x == y);
-		}
+			=> !(x == y);
 	}
 }
