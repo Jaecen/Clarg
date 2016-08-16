@@ -50,9 +50,7 @@ namespace Clarg
 		}
 
 		public override int GetHashCode()
-		{
-			return StringComparer.OrdinalIgnoreCase.GetHashCode(Name);
-		}
+			=> StringComparer.OrdinalIgnoreCase.GetHashCode(Name);
 
 		public static bool operator ==(ParameterDescriptor x, ParameterDescriptor y)
 		{
@@ -66,8 +64,6 @@ namespace Clarg
 		}
 
 		public static bool operator !=(ParameterDescriptor x, ParameterDescriptor y)
-		{
-			return !(x == y);
-		}
+			=> !(x == y);
 	}
 }

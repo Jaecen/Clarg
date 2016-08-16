@@ -24,11 +24,12 @@ namespace Tests
 		{
 			var parser = new Parser();
 
-			var arguments = parser.Create<OptionalArguments>(new[] { "--one", "first", "/two", "2", });
+			var result = parser.Create<OptionalArguments>(new[] { "--one", "first", "/two", "2", });
 
-			Assert.Equal("first", arguments.One);
-			Assert.Equal(2, arguments.Two);
-			Assert.Equal(null, arguments.Three);
+			Assert.IsType<ParserSuccess<OptionalArguments>>(result);
+			Assert.Equal("first", result.Value.One);
+			Assert.Equal(2, result.Value.Two);
+			Assert.Equal(null, result.Value.Three);
 		}
 
 		[Fact]
@@ -36,11 +37,12 @@ namespace Tests
 		{
 			var parser = new Parser();
 
-			var arguments = parser.Create<OptionalArguments>(new[] { "--one", "first", "/two", "2", "--three", "false" });
+			var result = parser.Create<OptionalArguments>(new[] { "--one", "first", "/two", "2", "--three", "false" });
 
-			Assert.Equal("first", arguments.One);
-			Assert.Equal(2, arguments.Two);
-			Assert.Equal(false, arguments.Three);
+			Assert.IsType<ParserSuccess<OptionalArguments>>(result);
+			Assert.Equal("first", result.Value.One);
+			Assert.Equal(2, result.Value.Two);
+			Assert.Equal(false, result.Value.Three);
 		}
 
 		[Fact]
@@ -48,11 +50,12 @@ namespace Tests
 		{
 			var parser = new Parser();
 
-			var arguments = parser.Create<OptionalArguments>(new[] { "--one", "first", "/two", "2", "--three" });
+			var result = parser.Create<OptionalArguments>(new[] { "--one", "first", "/two", "2", "--three" });
 
-			Assert.Equal("first", arguments.One);
-			Assert.Equal(2, arguments.Two);
-			Assert.Equal(true, arguments.Three);
+			Assert.IsType<ParserSuccess<OptionalArguments>>(result);
+			Assert.Equal("first", result.Value.One);
+			Assert.Equal(2, result.Value.Two);
+			Assert.Equal(true, result.Value.Three);
 		}
 	}
 }
