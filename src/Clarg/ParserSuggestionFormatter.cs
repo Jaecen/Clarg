@@ -1,61 +1,89 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using System.Text;
 
 namespace Clarg
 {
 	public class ParserSuggestionFormatter
 	{
+		// This class outputs parser suggestion as a formatted string to be displayed to humans.
+		// It has two sections: syntax and detail.
+
+		// The syntax section shows all of the possible combinations of arguments with the names of each 
+		// parameter and a description of what that combination does.
+
+		// The detail section shows a description of each parameter.
+
 		const string ArgumentPrefix = "--";
 
-		public string CreateErrorMessage(string command, IEnumerable<ParserSuggestion> suggestions)
+		public ConsoleString CreateErrorMessage(string command, IEnumerable<ParserSuggestion> suggestions)
 		{
-			var stringBuilder = new StringBuilder();
+			var invokedName = Path.GetFileName(command);
+
+			var errorMessage = new ConsoleString();
+			errorMessage += "Usage:";
+			errorMessage += Environment.NewLine;
 
 			foreach(var suggestion in suggestions)
 			{
-				stringBuilder.AppendLine(BuildSyntax(command, suggestion));
-				if(!string.IsNullOrWhiteSpace(suggestion.Description))
-					stringBuilder.AppendLine(suggestion.Description);
+				errorMessage += BuildSyntax(invokedName, suggestion);
+				errorMessage += Environment.NewLine;
 
-				stringBuilder.AppendLine();
+				if(!string.IsNullOrWhiteSpace(suggestion.Description))
+				{
+					errorMessage += suggestion.Description;
+					errorMessage += Environment.NewLine;
+				}
+
+				errorMessage += Environment.NewLine;
 			}
 
-			stringBuilder.AppendLine(BuildDetail(suggestions));
+			errorMessage += BuildDetail(suggestions);
 
-			return stringBuilder.ToString();
+			return errorMessage;
 		}
 
 		FormattedArgument FormatArgument(ParserSuggestionArgument argument)
 			=> new FormattedArgument(
 				argument: argument,
-				displayName: argument.IsParams
-					? "[...]"
-					: $"{ArgumentPrefix}{argument.Name}",
+				displayName:
+					argument.IsParams
+						? "[...]"
+						: $"{ArgumentPrefix}{argument.Name}",
 				displayType: argument.IsParams || argument.IsEnumerable
 					? $"<{argument.InnerType.Name}>..."
 					: $"<{argument.Type.Name}>");
 
-		string BuildSyntax(string command, ParserSuggestion suggestion)
+		ConsoleString BuildSyntax(string invokedName, ParserSuggestion suggestion)
 		{
 			var argumentSyntaxes = suggestion
 				.Arguments
 				.Select(FormatArgument)
 				.Select(BuildArgumentSyntax);
 
-			var argumentSyntaxList = string.Join(" ", argumentSyntaxes);
-
-			return $"Usage: {command} {argumentSyntaxList}";
+			var argumentSyntaxList = ConsoleString.Join(" ", argumentSyntaxes);
+			return invokedName + " " + argumentSyntaxList;
 		}
 
-		string BuildArgumentSyntax(FormattedArgument formattedArgument)
-			=> formattedArgument.Argument.IsParams
-				? formattedArgument.DisplayName
-				: formattedArgument.Argument.IsOptional
-					? $"[{formattedArgument.DisplayName} {formattedArgument.DisplayType}]"
-					: $"{formattedArgument.DisplayName} {formattedArgument.DisplayType}";
+		ConsoleString BuildArgumentSyntax(FormattedArgument formattedArgument)
+		{
+			var argumentSyntax = new ConsoleString();
 
-		string BuildDetail(IEnumerable<ParserSuggestion> suggestions)
+			if(formattedArgument.Argument.IsParams)
+				argumentSyntax += formattedArgument.DisplayName;
+			else if(formattedArgument.Argument.IsOptional)
+				argumentSyntax += "[" + formattedArgument.DisplayName + formattedArgument.DisplayType + "]";
+			else
+				argumentSyntax += formattedArgument.DisplayName + " " + formattedArgument.DisplayType;
+
+			if(formattedArgument.Argument.IsFulfilled == false)
+				argumentSyntax = ("!" + argumentSyntax + "!").Colored(foreground: ConsoleColor.Red);
+
+			return argumentSyntax;
+		}
+
+		ConsoleString BuildDetail(IEnumerable<ParserSuggestion> suggestions)
 		{
 			var formattedArguments = suggestions
 				.SelectMany(suggestion => suggestion.Arguments)
@@ -64,19 +92,42 @@ namespace Clarg
 				.ThenBy(argument => argument.Name)
 				.Select(FormatArgument);
 
-			var maxArgumentNameLength = formattedArguments.Max(argument => argument.DisplayName.Length);
-			var maxArgumentTypeLength = formattedArguments.Max(argument => argument.DisplayType.Length);
+			var maxArgumentNameLength = formattedArguments.Max(argument => argument.DisplayName.GetLength());
+			var maxArgumentTypeLength = formattedArguments.Max(argument => argument.DisplayType.GetLength());
 
-			var stringBuilder = new StringBuilder();
+			var detail = new ConsoleString();
 
-			stringBuilder.AppendLine("Options:");
+			detail += "Options:";
+			detail += Environment.NewLine;
+
 			foreach(var argument in formattedArguments)
-				stringBuilder.AppendLine(BuildArgumentDetail(argument, maxArgumentNameLength, maxArgumentTypeLength));
+			{
+				detail += BuildArgumentDetail(argument, maxArgumentNameLength, maxArgumentTypeLength);
+				detail += Environment.NewLine;
+			}
 
-			return stringBuilder.ToString();
+			return detail;
 		}
 
-		string BuildArgumentDetail(FormattedArgument formattedArgument, int maxArgumentNameLength, int maxArgumentTypeLength)
-			=> $"  {formattedArgument.DisplayName.PadRight(maxArgumentNameLength)} {formattedArgument.DisplayType.PadRight(maxArgumentTypeLength)} {formattedArgument.Argument.Description}";
+		ConsoleString BuildArgumentDetail(FormattedArgument formattedArgument, int maxArgumentNameLength, int maxArgumentTypeLength)
+		{
+			var argumentDetail = new ConsoleString();
+
+			argumentDetail += "  ";
+			argumentDetail += formattedArgument
+				.DisplayName
+				.PadRight(maxArgumentNameLength);
+			argumentDetail += " ";
+			argumentDetail += formattedArgument
+				.DisplayType
+				.PadRight(maxArgumentTypeLength);
+			argumentDetail += " ";
+			argumentDetail += formattedArgument.Argument.Description;
+
+			if(formattedArgument.Argument.IsFulfilled == false)
+				argumentDetail = argumentDetail.Colored(foreground: ConsoleColor.Red);
+
+			return argumentDetail;
+		}
 	}
 }

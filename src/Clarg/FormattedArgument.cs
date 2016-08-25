@@ -3,10 +3,10 @@
 	class FormattedArgument
 	{
 		public readonly ParserSuggestionArgument Argument;
-		public readonly string DisplayName;
-		public readonly string DisplayType;
+		public readonly ConsoleString DisplayName;
+		public readonly ConsoleString DisplayType;
 
-		public FormattedArgument(ParserSuggestionArgument argument, string displayName, string displayType)
+		public FormattedArgument(ParserSuggestionArgument argument, ConsoleString displayName, ConsoleString displayType)
 		{
 			Argument = argument;
 			DisplayName = displayName;
