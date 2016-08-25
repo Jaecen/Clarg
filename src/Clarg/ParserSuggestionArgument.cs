@@ -12,16 +12,18 @@ namespace Clarg
 		public readonly string Name;
 		public readonly string Description;
 		public readonly Type Type;
+		public readonly bool? IsFulfilled;
 		public readonly bool IsEnumerable;
 		public readonly bool IsOptional;
 		public readonly bool IsParams;
 		public readonly Type InnerType;
 
-		public ParserSuggestionArgument(string name, string description, Type type, bool isEnumerable, bool isOptional, bool isParams)
+		public ParserSuggestionArgument(string name, string description, Type type, bool? isFulfilled, bool isEnumerable, bool isOptional, bool isParams)
 		{
 			Name = name;
 			Description = description;
 			Type = type;
+			IsFulfilled = isFulfilled;
 			IsEnumerable = isEnumerable;
 			IsOptional = isOptional;
 			IsParams = isParams;
@@ -38,18 +40,23 @@ namespace Clarg
 
 		public override bool Equals(object obj)
 			=> obj is ParserSuggestionArgument
-				? Equals(this, (ParserSuggestionArgument)obj)
-				: false;
+				&& Equals(this, (ParserSuggestionArgument)obj);
 
 		bool Equals(ParserSuggestionArgument x, ParserSuggestionArgument y)
 		{
 			if(ReferenceEquals(x, null) || ReferenceEquals(y, null))
 				return ReferenceEquals(x, null) && ReferenceEquals(y, null);
 
+			if(ReferenceEquals(x, y))
+				return true;
+
 			if(!StringComparer.OrdinalIgnoreCase.Equals(x.Name, y.Name))
 				return false;
 
 			if(x.Type != y.Type)
+				return false;
+
+			if(x.IsFulfilled != y.IsFulfilled)
 				return false;
 
 			if(x.IsEnumerable != y.IsEnumerable)
@@ -72,6 +79,7 @@ namespace Clarg
 			{
 				hashCode = hashCode * HashCodeFactor + Name?.GetHashCode() ?? 0;
 				hashCode = hashCode * HashCodeFactor + Type?.GetHashCode() ?? 0;
+				hashCode = hashCode * HashCodeFactor + IsFulfilled.GetHashCode();
 				hashCode = hashCode * HashCodeFactor + IsEnumerable.GetHashCode();
 				hashCode = hashCode * HashCodeFactor + IsOptional.GetHashCode();
 				hashCode = hashCode * HashCodeFactor + IsParams.GetHashCode();

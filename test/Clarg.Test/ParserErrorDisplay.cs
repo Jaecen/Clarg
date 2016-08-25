@@ -47,7 +47,9 @@ namespace Tests
 			Assert.IsType<ParserError<DecoratedArguments>>(parserResult);
 
 			var parserSuggestionFormatter = new ParserSuggestionFormatter();
-			var result = parserSuggestionFormatter.CreateErrorMessage(Command, parserResult.Suggestions);
+			var result = parserSuggestionFormatter
+				.CreateErrorMessage(Command, parserResult.Suggestions)
+				.ToString();
 
 			Assert.NotNull(result);
 			Assert.Contains(Command, result);

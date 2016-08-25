@@ -172,9 +172,11 @@ namespace Clarg
 			{
 				// If no arguments were provided, give a full list of options.
 				// If some arguments were provided, take all matches with the lowest number of unmatched parameters and present them as suggestions.
+				var listAllCandidates = !args.Any();
+
 				var lowestUnmatchedCount = rankedCandidates.Min(candidate => candidate.unmatchedParameterCount + candidate.unmatchedArgumentCount);
 				return new ParserError<T>(rankedCandidates
-					.Where(candidate => !args.Any() || (candidate.unmatchedParameterCount + candidate.unmatchedArgumentCount) == lowestUnmatchedCount)
+					.Where(candidate => listAllCandidates || (candidate.unmatchedParameterCount + candidate.unmatchedArgumentCount) == lowestUnmatchedCount)
 					.Select(candidate => new ParserSuggestion(
 						description: candidate
 							.constructor
@@ -189,9 +191,17 @@ namespace Clarg
 									.GetCustomAttribute<ArgumentDescriptionAttribute>()
 									?.Description,
 								type: parameter.Type,
+								isFulfilled: listAllCandidates
+									? (bool?)null
+									: candidate
+										.mappings
+										.Where(mapping => mapping.Parameter == parameter)
+										.Where(mapping => parameter.IsOptional || mapping.Argument != null)
+										.Any(),
 								isEnumerable: parameter.IsEnumerable,
 								isOptional: parameter.IsOptional,
-								isParams: parameter.IsParamsArray)))));
+								isParams: parameter.IsParamsArray))
+							.ToArray())));
 			}
 
 			// Prepare the arguments by converting them to the corresponding parameter type
