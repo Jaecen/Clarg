@@ -43,9 +43,9 @@ namespace Tests
 		{
 			var parser = new Parser();
 
-			var result = parser.Create<DecoratedArguments>(new string[0]);
+			var result = parser.Create<DecoratedArguments>("-", new string[0]);
 
-			Assert.IsType<ParserError<DecoratedArguments>>(result);
+			Assert.IsType<ParserSuggestions<DecoratedArguments>>(result);
 
 			var stringSuggestion = result
 				.Suggestions
@@ -70,9 +70,9 @@ namespace Tests
 		{
 			var parser = new Parser();
 
-			var result = parser.Create<DecoratedArguments>(new string[0]);
+			var result = parser.Create<DecoratedArguments>("-", new string[0]);
 
-			Assert.IsType<ParserError<DecoratedArguments>>(result);
+			Assert.IsType<ParserSuggestions<DecoratedArguments>>(result);
 
 			var optionalSuggestion = result
 				.Suggestions
@@ -97,9 +97,9 @@ namespace Tests
 		{
 			var parser = new Parser();
 
-			var result = parser.Create<DecoratedArguments>(new string[0]);
+			var result = parser.Create<DecoratedArguments>("-", new string[0]);
 
-			Assert.IsType<ParserError<DecoratedArguments>>(result);
+			Assert.IsType<ParserSuggestions<DecoratedArguments>>(result);
 
 			var optionalSuggestion = result
 				.Suggestions
@@ -124,9 +124,9 @@ namespace Tests
 		{
 			var parser = new Parser();
 
-			var result = parser.Create<DecoratedArguments>(new string[0]);
+			var result = parser.Create<DecoratedArguments>("-", new string[0]);
 
-			Assert.IsType<ParserError<DecoratedArguments>>(result);
+			Assert.IsType<ParserSuggestions<DecoratedArguments>>(result);
 
 			var paramsSuggestion = result
 				.Suggestions

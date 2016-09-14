@@ -25,10 +25,13 @@ namespace Tests
 		{
 			var parser = new Parser();
 
-			var result = parser.Create<ParamsArguments>(new[] {
-				"--one", "first",
-				"/two", "2",
-			});
+			var result = parser.Create<ParamsArguments>(
+				"-",
+				new[]
+				{
+					"-one", "first",
+					"-two", "2",
+				});
 
 			Assert.IsType<ParserSuccess<ParamsArguments>>(result);
 			Assert.Equal("first", result.Value.One);
@@ -41,12 +44,15 @@ namespace Tests
 		{
 			var parser = new Parser();
 
-			var result = parser.Create<ParamsArguments>(new[] {
-				"--one", "first",
-				"/two", "2",
-				"--three", "working",
-				"/four", "hopefully",
-			});
+			var result = parser.Create<ParamsArguments>(
+				"-",
+				new[]
+				{
+					"-one", "first",
+					"-two", "2",
+					"-three", "working",
+					"-four", "hopefully",
+				});
 
 			Assert.IsType<ParserSuccess<ParamsArguments>>(result);
 			Assert.Equal("first", result.Value.One);

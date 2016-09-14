@@ -41,14 +41,16 @@ namespace Tests
 		[Fact]
 		void Should_Format_Error_Message()
 		{
-			var parser = new Parser();
-			var parserResult = parser.Create<DecoratedArguments>(new string[0]);
+			var argumentPrefix = "-";
 
-			Assert.IsType<ParserError<DecoratedArguments>>(parserResult);
+			var parser = new Parser();
+			var parserResult = parser.Create<DecoratedArguments>(argumentPrefix, new string[0]);
+
+			Assert.IsType<ParserSuggestions<DecoratedArguments>>(parserResult);
 
 			var parserSuggestionFormatter = new ParserSuggestionFormatter();
 			var result = parserSuggestionFormatter
-				.CreateErrorMessage(Command, parserResult.Suggestions)
+				.CreateErrorMessage(Command, argumentPrefix, parserResult.Suggestions)
 				.ToString();
 
 			Assert.NotNull(result);
