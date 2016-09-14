@@ -24,7 +24,13 @@ namespace Tests
 		{
 			var parser = new Parser();
 
-			var result = parser.Create<OptionalArguments>(new[] { "--one", "first", "/two", "2", });
+			var result = parser.Create<OptionalArguments>(
+				"-",
+				new[]
+				{
+					"-one", "first",
+					"-two", "2"
+				});
 
 			Assert.IsType<ParserSuccess<OptionalArguments>>(result);
 			Assert.Equal("first", result.Value.One);
@@ -37,25 +43,18 @@ namespace Tests
 		{
 			var parser = new Parser();
 
-			var result = parser.Create<OptionalArguments>(new[] { "--one", "first", "/two", "2", "--three", "false" });
+			var result = parser.Create<OptionalArguments>("-",
+				new[]
+				{
+					"-one", "first",
+					"-two", "2",
+					"-three", "false"
+				});
 
 			Assert.IsType<ParserSuccess<OptionalArguments>>(result);
 			Assert.Equal("first", result.Value.One);
 			Assert.Equal(2, result.Value.Two);
 			Assert.Equal(false, result.Value.Three);
-		}
-
-		[Fact]
-		public void HandleOptionalArgumentsWithPresentAsBool()
-		{
-			var parser = new Parser();
-
-			var result = parser.Create<OptionalArguments>(new[] { "--one", "first", "/two", "2", "--three" });
-
-			Assert.IsType<ParserSuccess<OptionalArguments>>(result);
-			Assert.Equal("first", result.Value.One);
-			Assert.Equal(2, result.Value.Two);
-			Assert.Equal(true, result.Value.Three);
 		}
 	}
 }

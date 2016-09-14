@@ -22,7 +22,13 @@ namespace Tests
 		{
 			var parser = new Parser();
 
-			var result = parser.Create<ExactArguments>(new[] { "--one", "first", "/two", "2" });
+			var result = parser.Create<ExactArguments>(
+				"-",
+				new[]
+				{
+					"-one", "first",
+					"-two", "2"
+				});
 
 			Assert.IsType<ParserSuccess<ExactArguments>>(result);
 			Assert.Equal("first", result.Value.One);

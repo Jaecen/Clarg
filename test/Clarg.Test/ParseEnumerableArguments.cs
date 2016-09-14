@@ -22,8 +22,11 @@ namespace Tests
 		{
 			var parser = new Parser();
 
-			var result = parser.Create<EnumerableArguments>(new[] {
-					"/numbers", "1",
+			var result = parser.Create<EnumerableArguments>(
+				"-",
+				new[]
+				{
+					"-numbers", "1",
 				});
 
 			Assert.IsType<ParserSuccess<EnumerableArguments>>(result);
@@ -37,10 +40,13 @@ namespace Tests
 		{
 			var parser = new Parser();
 
-			var result = parser.Create<EnumerableArguments>(new[] {
-					"/numbers", "1",
-					"--numbers", "2",
-					"/Numbers", "3",
+			var result = parser.Create<EnumerableArguments>(
+				"-",
+				new[]
+				{
+					"-numbers", "1",
+					"-numbers", "2",
+					"-Numbers", "3",
 				});
 
 			Assert.IsType<ParserSuccess<EnumerableArguments>>(result);
@@ -68,8 +74,11 @@ namespace Tests
 		{
 			var parser = new Parser();
 
-			var result = parser.Create<OptionalEnumerableArguments>(new[] {
-					"/first", "3.14",
+			var result = parser.Create<OptionalEnumerableArguments>(
+				"-",
+				new[]
+				{
+					"-first", "3.14",
 				});
 
 			Assert.IsType<ParserSuccess<OptionalEnumerableArguments>>(result);
@@ -82,9 +91,12 @@ namespace Tests
 		{
 			var parser = new Parser();
 
-			var result = parser.Create<OptionalEnumerableArguments>(new[] {
-					"/first", "3.14",
-					"/numbers", "1",
+			var result = parser.Create<OptionalEnumerableArguments>(
+				"-",
+				new[]
+				{
+					"-first", "3.14",
+					"-numbers", "1",
 				});
 
 			Assert.IsType<ParserSuccess<OptionalEnumerableArguments>>(result);
@@ -99,11 +111,14 @@ namespace Tests
 		{
 			var parser = new Parser();
 
-			var result = parser.Create<OptionalEnumerableArguments>(new[] {
-					"/first", "3.14",
-					"/numbers", "1",
-					"--numbers", "2",
-					"/Numbers", "3",
+			var result = parser.Create<OptionalEnumerableArguments>(
+				"-",
+				new[]
+				{
+					"-first", "3.14",
+					"-numbers", "1",
+					"-numbers", "2",
+					"-Numbers", "3",
 				});
 
 			Assert.IsType<ParserSuccess<OptionalEnumerableArguments>>(result);

@@ -10,14 +10,12 @@ namespace Clarg
 		// This class outputs parser suggestion as a formatted string to be displayed to humans.
 		// It has two sections: syntax and detail.
 
-		// The syntax section shows all of the possible combinations of arguments with the names of each 
+		// The syntax section shows all of the possible combinations of arguments with the names of each
 		// parameter and a description of what that combination does.
 
 		// The detail section shows a description of each parameter.
 
-		const string ArgumentPrefix = "--";
-
-		public ConsoleString CreateErrorMessage(string command, IEnumerable<ParserSuggestion> suggestions)
+		public ConsoleString CreateErrorMessage(string command, string argumentPrefix, IEnumerable<ParserSuggestion> suggestions)
 		{
 			var invokedName = Path.GetFileName(command);
 
@@ -27,7 +25,7 @@ namespace Clarg
 
 			foreach(var suggestion in suggestions)
 			{
-				errorMessage += BuildSyntax(invokedName, suggestion);
+				errorMessage += BuildSyntax(invokedName, argumentPrefix, suggestion);
 				errorMessage += Environment.NewLine;
 
 				if(!string.IsNullOrWhiteSpace(suggestion.Description))
@@ -39,27 +37,27 @@ namespace Clarg
 				errorMessage += Environment.NewLine;
 			}
 
-			errorMessage += BuildDetail(suggestions);
+			errorMessage += BuildDetail(argumentPrefix, suggestions);
 
 			return errorMessage;
 		}
 
-		FormattedArgument FormatArgument(ParserSuggestionArgument argument)
+		FormattedArgument FormatArgument(string argumentPrefix, ParserSuggestionArgument argument)
 			=> new FormattedArgument(
 				argument: argument,
 				displayName:
 					argument.IsParams
 						? "[...]"
-						: $"{ArgumentPrefix}{argument.Name}",
+						: $"{argumentPrefix}{argument.Name}",
 				displayType: argument.IsParams || argument.IsEnumerable
 					? $"<{argument.InnerType.Name}>..."
 					: $"<{argument.Type.Name}>");
 
-		ConsoleString BuildSyntax(string invokedName, ParserSuggestion suggestion)
+		ConsoleString BuildSyntax(string invokedName, string argumentPrefix, ParserSuggestion suggestion)
 		{
 			var argumentSyntaxes = suggestion
 				.Arguments
-				.Select(FormatArgument)
+				.Select(argument => FormatArgument(argumentPrefix, argument))
 				.Select(BuildArgumentSyntax);
 
 			var argumentSyntaxList = ConsoleString.Join(" ", argumentSyntaxes);
@@ -83,14 +81,14 @@ namespace Clarg
 			return argumentSyntax;
 		}
 
-		ConsoleString BuildDetail(IEnumerable<ParserSuggestion> suggestions)
+		ConsoleString BuildDetail(string argumentPrefix, IEnumerable<ParserSuggestion> suggestions)
 		{
 			var formattedArguments = suggestions
 				.SelectMany(suggestion => suggestion.Arguments)
 				.Distinct()
 				.OrderBy(argument => argument.IsParams)
 				.ThenBy(argument => argument.Name)
-				.Select(FormatArgument);
+				.Select(argument => FormatArgument(argumentPrefix, argument));
 
 			var maxArgumentNameLength = formattedArguments.Max(argument => argument.DisplayName.GetLength());
 			var maxArgumentTypeLength = formattedArguments.Max(argument => argument.DisplayType.GetLength());

@@ -14,7 +14,7 @@ namespace Tests
 		{
 			var parser = new Parser();
 
-			var result = parser.Create<NoArguments>(new string[0]);
+			var result = parser.Create<NoArguments>("-", new string[0]);
 
 			Assert.IsType<ParserSuccess<NoArguments>>(result);
 		}
@@ -34,9 +34,9 @@ namespace Tests
 		{
 			var parser = new Parser();
 
-			var result = parser.Create<RequiredArguments>(new string[0]);
+			var result = parser.Create<RequiredArguments>("-", new string[0]);
 
-			Assert.IsType<ParserError<RequiredArguments>>(result);
+			Assert.IsType<ParserSuggestions<RequiredArguments>>(result);
 		}
 
 		class OptionalArguments
@@ -54,7 +54,7 @@ namespace Tests
 		{
 			var parser = new Parser();
 
-			var result = parser.Create<OptionalArguments>(new string[0]);
+			var result = parser.Create<OptionalArguments>("-", new string[0]);
 
 			Assert.IsType<ParserSuccess<OptionalArguments>>(result);
 		}
@@ -74,7 +74,7 @@ namespace Tests
 		{
 			var parser = new Parser();
 
-			var result = parser.Create<ParamsArguments>(new string[0]);
+			var result = parser.Create<ParamsArguments>("-", new string[0]);
 
 			Assert.IsType<ParserSuccess<ParamsArguments>>(result);
 		}

@@ -8,37 +8,47 @@ namespace Clarg
 	class Tokenizer
 	{
 		// Recursively parse the arguments into KVP's
-		public IEnumerable<ArgumentDescriptor> Tokenize(string[] args)
-			=> ParseArguments(
-				args.Select(s => (s ?? string.Empty).Trim()));                 // Help ensure good data going in
+		public TokenizerResult Tokenize(string argumentPrefix, string[] args)
+		{
+			try
+			{
+				var descriptors = ParseArguments(
+					argumentPrefix,
+					args.Select(s => s?.Trim() ?? string.Empty));
 
-		IEnumerable<ArgumentDescriptor> ParseArguments(IEnumerable<string> args)
+				return new TokenizerSuccess(descriptors);
+			}
+			catch(Exception exception)
+			{
+				return new TokenizerError(exception);
+			}
+		}
+
+		IEnumerable<ArgumentDescriptor> ParseArguments(string argumentPrefix, IEnumerable<string> args)
 		{
 			if(!args.Any())
 				return Enumerable.Empty<ArgumentDescriptor>();
 
 			var arg = args.First();
 
-			if(arg.StartsWith("--"))
-				return ParseArguments(args.Skip(1), arg.Substring(2));
-			else if(arg.StartsWith("-"))
-				return ParseArguments(args.Skip(1), arg.Substring(1));
-			else if(arg.StartsWith("/"))
-				return ParseArguments(args.Skip(1), arg.Substring(1));
-			else
-				throw new Exception("Argument provided without a name.");
+			if(!arg.StartsWith(argumentPrefix))
+				throw new Exception("Argument provided without a name");
+
+			return ParseArguments(
+				argumentPrefix,
+				args.Skip(1),
+				arg.Substring(argumentPrefix.Length));
 		}
 
-		IEnumerable<ArgumentDescriptor> ParseArguments(IEnumerable<string> args, string argumentName)
+		IEnumerable<ArgumentDescriptor> ParseArguments(string argumentPrefix, IEnumerable<string> args, string argumentName)
 		{
 			var arg = args.FirstOrDefault();
 
-			if(!args.Any() || (arg.StartsWith("--") || arg.StartsWith("-") || arg.StartsWith("/")))
-				return new[] { new ArgumentDescriptor(argumentName, bool.TrueString) }
-					.Concat(ParseArguments(args));                             // Don't advance args, as there was no value
-			else
-				return new[] { new ArgumentDescriptor(argumentName, arg) }
-					.Concat(ParseArguments(args.Skip(1)));
+			if(!args.Any())
+				throw new Exception("Argument provided without a value");
+
+			return new[] { new ArgumentDescriptor(argumentName, arg) }
+				.Concat(ParseArguments(argumentPrefix, args.Skip(1)));
 		}
 	}
 }

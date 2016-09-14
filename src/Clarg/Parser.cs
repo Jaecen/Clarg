@@ -32,11 +32,15 @@ namespace Clarg
 			Tokenizer = new Tokenizer();
 		}
 
-		public ParserResult<T> Create<T>(string[] args)
+		public ParserResult<T> Create<T>(string argumentPrefix, string[] args)
 			where T : class
 		{
 			// Turn args into a set of kvp's
-			var arguments = Tokenizer.Tokenize(args ?? new string[0]);
+			var tokenizerResult = Tokenizer.Tokenize(argumentPrefix, args);
+			if(!tokenizerResult.Ok)
+				return new ParserError<T>(tokenizerResult.Error);
+
+			var arguments = tokenizerResult.Value;
 
 			// Extract some basic information about each constructor on the target type and its parameters
 			var constructorCandidates = typeof(T)
@@ -175,7 +179,7 @@ namespace Clarg
 				var listAllCandidates = !args.Any();
 
 				var lowestUnmatchedCount = rankedCandidates.Min(candidate => candidate.unmatchedParameterCount + candidate.unmatchedArgumentCount);
-				return new ParserError<T>(rankedCandidates
+				return new ParserSuggestions<T>(rankedCandidates
 					.Where(candidate => listAllCandidates || (candidate.unmatchedParameterCount + candidate.unmatchedArgumentCount) == lowestUnmatchedCount)
 					.Select(candidate => new ParserSuggestion(
 						description: candidate
