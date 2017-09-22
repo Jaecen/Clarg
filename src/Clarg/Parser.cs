@@ -10,14 +10,14 @@ namespace Clarg
 	// A _C_ommand _L_ine _ARG_uments parser
 	//	- Doesn't require a decorated type or mutable properties to specify arguments.
 	//	- Arguments are determined from the constructor of the target type.
-	//	- Accepts -- or / for param names.
+	//	- Accepts - for param names.
 	//	- Assumes boolean if just a name is given.
 	//	- Supports optional arguments via, well, optional arguments.
-	//	- Supports extra arguments via params arg.
+	//	- Supports extra arguments via params arg, either as a string[] or a KeyValuePair<string, string>[].
 	//	- Supports multiple argument values via IEnumerable
 	//	- T is any undecorated type.
 	//	- T can be immutable.
-	//	- Generates help text
+	//	- Generates help text.
 	//	- Help text can be customized by decorating constructors and paramters with ArgumentDescriptionAttribute.
 
 	// Eventially will support
@@ -58,7 +58,9 @@ namespace Clarg
 								parameter.ParameterType.GetTypeInfo().IsGenericType
 								&& parameter.ParameterType.GetTypeInfo().GetGenericTypeDefinition() == typeof(IEnumerable<>),
 							isOptional: parameter.IsOptional,
-							isParamsArray: parameter.ParameterType == typeof(KeyValuePair<string, string>[]) && parameter.GetCustomAttributes<ParamArrayAttribute>().Any(),
+							isParamsArray: parameter.GetCustomAttributes<ParamArrayAttribute>().Any()
+								&& (parameter.ParameterType == typeof(KeyValuePair<string, string>[])
+									|| parameter.ParameterType == typeof(string[])),
 							parameterInfo: parameter))
 						.ToArray(),
 				})
@@ -238,12 +240,18 @@ namespace Clarg
 			if(parameterMapping.Key.IsOptional && !parameterMapping.Where(argument => argument != null).Any())
 				return parameterMapping.Key.ParameterInfo.DefaultValue;
 
-			// Params array is always KVP<string, string>[]
+			// Params array can be either a KVP<string, string>[] or string[]
 			if(parameterMapping.Key.IsParamsArray)
-				return parameterMapping
-					.Where(argument => argument != null)
-					.Select(argument => new KeyValuePair<string, string>(argument.Name, argument.Value))
-					.ToArray();
+				if(parameterMapping.Key.Type == typeof(string[]))
+					return parameterMapping
+						.Where(argument => argument != null)
+						.SelectMany(argument => new[] { argument.Name, argument.Value })
+						.ToArray();
+				else if(parameterMapping.Key.Type == typeof(KeyValuePair<string, string>[]))
+					return parameterMapping
+						.Where(argument => argument != null)
+						.Select(argument => new KeyValuePair<string, string>(argument.Name, argument.Value))
+						.ToArray();
 
 			var parameterType = parameterMapping
 				.Key
