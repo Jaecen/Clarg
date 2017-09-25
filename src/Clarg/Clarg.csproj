@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFrameworks>net451;netstandard1.5</TargetFrameworks>
+		<Description>Command Line Arguments Parser</Description>
+		<Company>Vortx, Inc.</Company>
+		<Authors>jason@vortx.com</Authors>
+		<Copyright>(c) Vortx, Inc.</Copyright>
+		<VersionPrefix>3.2.1</VersionPrefix>
+	</PropertyGroup>
+
+	<ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
+		<Reference Include="System" />
+		<Reference Include="Microsoft.CSharp" />
+	</ItemGroup>
+
+	<ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.5' ">
+		<PackageReference Include="System.ComponentModel.TypeConverter" Version="4.1.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <PackageReference Include="System.ComponentModel.TypeConverter" Version="4.3.0" />
+	</ItemGroup>
+
+</Project>

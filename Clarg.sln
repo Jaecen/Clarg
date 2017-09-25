@@ -1,16 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25123.0
+# Visual Studio 15
+VisualStudioVersion = 15.0.26730.16
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Clarg", "src\Clarg\Clarg.xproj", "{6AEAA003-8F25-481A-B9E2-46D40EB623A7}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{E1355C49-9CF9-4A2B-AAB8-B353D1F6C75C}"
-	ProjectSection(SolutionItems) = preProject
-		global.json = global.json
-	EndProjectSection
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Clarg.Test", "test\Clarg.Test\Clarg.Test.xproj", "{914AD591-4011-406C-AAF9-8514712BBBC9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Clarg", "src\Clarg\Clarg.csproj", "{6AEAA003-8F25-481A-B9E2-46D40EB623A7}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Clarg.Test", "test\Clarg.Test\Clarg.Test.csproj", "{914AD591-4011-406C-AAF9-8514712BBBC9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -29,5 +26,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {B59DA91F-2009-44C1-A2D7-B810B28BE525}
 	EndGlobalSection
 EndGlobal
